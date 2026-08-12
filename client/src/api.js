@@ -1,7 +1,11 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "/api";
+const rawBaseUrl = import.meta.env.VITE_API_URL;
+const BASE_URL = rawBaseUrl && rawBaseUrl.startsWith("http") ? rawBaseUrl : "/api";
+
+function isAbsoluteUrl(path) {
+  return path.startsWith("http://") || path.startsWith("https://");
+}
 
 async function request(path, options = {}) {
-  // Destructure custom parameters out of options before passing options to fetch
   const { suppressGlobalError, ...fetchOptions } = options;
 
   const token = localStorage.getItem("token");
@@ -14,7 +18,9 @@ async function request(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const fetchPath = isAbsoluteUrl(path) ? path : `${BASE_URL}${path}`;
+
+  const response = await fetch(fetchPath, {
     ...fetchOptions,
     headers,
   });
@@ -23,7 +29,6 @@ async function request(path, options = {}) {
     const data = await response.json().catch(() => ({}));
     let message = "Request failed";
 
-    // Extract detailed FastAPI validation errors
     if (Array.isArray(data.detail) && data.detail[0]?.msg) {
       const field = data.detail[0].loc?.[1] ? `[${data.detail[0].loc[1]}]: ` : "";
       message = `${field}${data.detail[0].msg}`;
@@ -48,7 +53,9 @@ async function request(path, options = {}) {
     throw error;
   }
 
-  return response.json();
+  return response.json().catch(() => {
+    throw new Error("Received invalid or empty response from server");
+  });
 }
 
 export const api = {
