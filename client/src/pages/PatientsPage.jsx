@@ -7,10 +7,10 @@ export default function PatientsPage() {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    api.patients().then(setPatients);
+    api.patients().then((data) => setPatients(data || [])).catch(console.error);
   }, []);
 
-  const filtered = patients.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()));
+  const filtered = patients.filter((p) => p.name?.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <div>
@@ -22,31 +22,34 @@ export default function PatientsPage() {
       </div>
       <input placeholder="Search patient" value={query} onChange={(e) => setQuery(e.target.value)} />
       <div className="card">
-        {filtered.map((patient) => (
-          <div key={patient.id} className="row spread line">
-            <span>
-              {patient.name} | {patient.vikriti}
-            </span>
-            <span>
-              <Link to={`/patients/${patient.id}`}>View</Link> |{" "}
-              <Link to={`/patients/${patient.id}/edit`}>Edit</Link> |{" "}
-              <Link to={`/patients/${patient.id}/diet`}>Create Diet</Link> |{" "}
-              <button
-                className="text-btn danger"
-                onClick={async () => {
-                  if (window.confirm("Are you sure you want to delete this patient?")) {
-                    await api.deletePatient(patient.id);
-                    setPatients(patients.filter((p) => p.id !== patient.id));
-                  }
-                }}
-              >
-                Delete
-              </button>
-            </span>
-          </div>
-        ))}
+        {filtered.map((patient) => {
+          const patientId = patient._id || patient.id;
+
+          return (
+            <div key={patientId} className="row spread line">
+              <span>
+                {patient.name} | {patient.vikriti}
+              </span>
+              <span>
+                <Link to={`/patients/${patientId}`}>View</Link> |{" "}
+                <Link to={`/patients/${patientId}/edit`}>Edit</Link> |{" "}
+                <Link to={`/patients/${patientId}/diet`}>Create Diet</Link> |{" "}
+                <button
+                  className="text-btn danger"
+                  onClick={async () => {
+                    if (window.confirm("Are you sure you want to delete this patient?")) {
+                      await api.deletePatient(patientId);
+                      setPatients(patients.filter((p) => (p._id || p.id) !== patientId));
+                    }
+                  }}
+                >
+                  Delete
+                </button>
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
-

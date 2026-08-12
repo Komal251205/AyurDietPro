@@ -7,10 +7,14 @@ export default function PatientDetailPage() {
   const [patient, setPatient] = useState(null);
 
   useEffect(() => {
-    api.patient(id).then(setPatient);
+    if (id && id !== "undefined") {
+      api.patient(id).then(setPatient).catch(console.error);
+    }
   }, [id]);
 
-  if (!patient) return <div>Loading...</div>;
+  if (!patient) return <div className="card">Loading...</div>;
+
+  const patientId = patient._id || patient.id || id;
 
   return (
     <div className="card">
@@ -19,10 +23,9 @@ export default function PatientDetailPage() {
         {patient.age} yrs | {patient.gender} | Vikriti: {patient.vikriti}
       </p>
       <p>Conditions: {(patient.conditions || []).join(", ") || "None"}</p>
-      <Link className="primary-btn" to={`/patients/${id}/diet`}>
+      <Link className="primary-btn" to={`/patients/${patientId}/diet`}>
         Generate Diet Plan
       </Link>
     </div>
   );
 }
-
