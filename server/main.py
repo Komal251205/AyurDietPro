@@ -13,7 +13,7 @@ app = FastAPI(title="AyurDiet Pro API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://*.onrender.com"], # Add this line
+    allow_origin_regex=r"https://([a-z0-9-]+\.)*onrender\.com|http://localhost:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

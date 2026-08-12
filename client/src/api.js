@@ -1,8 +1,37 @@
-const rawBaseUrl = import.meta.env.VITE_API_URL;
-const BASE_URL = rawBaseUrl && rawBaseUrl.startsWith("http") ? rawBaseUrl : "/api";
+const rawBaseUrl = (import.meta.env.VITE_API_URL || "").trim();
+
+function resolveBaseUrl() {
+  if (rawBaseUrl) {
+    try {
+      const parsed = new URL(rawBaseUrl);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+        let base = parsed.href.replace(/\/+$/, "");
+        if (!/\/api$/i.test(base)) {
+          base += "/api";
+        }
+        return base;
+      }
+    } catch {}
+  }
+  return "/api";
+}
+
+export const BASE_URL = resolveBaseUrl();
 
 function isAbsoluteUrl(path) {
-  return path.startsWith("http://") || path.startsWith("https://");
+  return /^([a-z][a-z0-9+.-]*:)?\/\//i.test(path);
+}
+
+function buildUrl(path) {
+  if (isAbsoluteUrl(path)) {
+    return path;
+  }
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${BASE_URL}${cleanPath}`;
+}
+
+function looksLikeHtml(text, contentType) {
+  return contentType.includes("text/html") || /^</.test(text.trim());
 }
 
 async function request(path, options = {}) {
@@ -18,26 +47,57 @@ async function request(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const fetchPath = isAbsoluteUrl(path) ? path : `${BASE_URL}${path}`;
+  let response;
+  try {
+    response = await fetch(buildUrl(path), {
+      ...fetchOptions,
+      headers,
+    });
+  } catch {
+    const message = navigator.onLine
+      ? "Unable to reach the server. Please try again."
+      : "No internet connection.";
+    const error = new Error(message);
+    error.status = 0;
+    if (!suppressGlobalError) {
+      window.dispatchEvent(
+        new CustomEvent("api-error", {
+          detail: { message, status: 0 },
+        })
+      );
+    }
+    throw error;
+  }
 
-  const response = await fetch(fetchPath, {
-    ...fetchOptions,
-    headers,
-  });
+  const bodyText = await response.text().catch(() => "");
+  const contentType = response.headers.get("content-type") || "";
+
+  let data = null;
+  if (bodyText.trim()) {
+    try {
+      data = JSON.parse(bodyText);
+    } catch {
+      data = null;
+    }
+  }
 
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
     let message = "Request failed";
 
-    if (Array.isArray(data.detail) && data.detail[0]?.msg) {
+    if (data && Array.isArray(data.detail) && data.detail[0]?.msg) {
       const field = data.detail[0].loc?.[1] ? `[${data.detail[0].loc[1]}]: ` : "";
       message = `${field}${data.detail[0].msg}`;
-    } else if (typeof data.detail === "string") {
+    } else if (data && typeof data.detail === "string") {
       message = data.detail;
-    } else if (data.message) {
+    } else if (data && data.message) {
       message = data.message;
+    } else if (looksLikeHtml(bodyText, contentType)) {
+      message =
+        "The server returned an unexpected page instead of data. The API URL may be misconfigured.";
     } else if (!navigator.onLine) {
       message = "No internet connection.";
+    } else if (bodyText.trim()) {
+      message = "Request failed with an unexpected response.";
     }
 
     const error = new Error(message);
@@ -53,9 +113,21 @@ async function request(path, options = {}) {
     throw error;
   }
 
-  return response.json().catch(() => {
-    throw new Error("Received invalid or empty response from server");
-  });
+  if (response.status === 204 || response.status === 205 || !bodyText.trim()) {
+    return null;
+  }
+
+  if (data === null) {
+    const error = new Error(
+      looksLikeHtml(bodyText, contentType)
+        ? "The server returned an unexpected page instead of data. The API URL may be misconfigured."
+        : "Received invalid or empty response from server"
+    );
+    error.status = response.status;
+    throw error;
+  }
+
+  return data;
 }
 
 export const api = {
