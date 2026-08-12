@@ -1,19 +1,32 @@
 const rawBaseUrl = (import.meta.env.VITE_API_URL || "").trim();
 
+const PROD_FALLBACK_BASE = "https://ayurdiet-backend-cah4.onrender.com";
+
+function toApiBase(raw) {
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      let base = parsed.href.replace(/\/+$/, "");
+      if (!/\/api$/i.test(base)) {
+        base += "/api";
+      }
+      return base;
+    }
+  } catch {}
+  return null;
+}
+
 function resolveBaseUrl() {
   if (rawBaseUrl) {
-    try {
-      const parsed = new URL(rawBaseUrl);
-      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
-        let base = parsed.href.replace(/\/+$/, "");
-        if (!/\/api$/i.test(base)) {
-          base += "/api";
-        }
-        return base;
-      }
-    } catch {}
+    const fromEnv = toApiBase(rawBaseUrl);
+    if (fromEnv) {
+      return fromEnv;
+    }
   }
-  return "/api";
+  if (import.meta.env.DEV) {
+    return "/api";
+  }
+  return toApiBase(PROD_FALLBACK_BASE);
 }
 
 export const BASE_URL = resolveBaseUrl();
