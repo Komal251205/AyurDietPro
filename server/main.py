@@ -28,6 +28,9 @@ def startup_event():
 def health():
     return {"status": "ok"}
 
+@app.get("/")
+def health_check():
+    return {"status": "healthy", "message": "AyurDiet Pro API is running"}
 
 app.include_router(auth_routes.router)
 app.include_router(patient_routes.router)
