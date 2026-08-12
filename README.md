@@ -1,19 +1,28 @@
-# 🌿 AyurDietPro
+# 🌿 AyurDiet Pro
 
-> **Intelligent, Personalized Ayurvedic Nutrition & Diet Planning Platform**
+> **Clinical-Grade Ayurvedic Nutrition & Diet Planning Platform**
 
-AyurDietPro is a comprehensive wellness application that bridges classical Ayurvedic principles (*Ahara Shastra*) with modern nutritional science. It analyzes an individual's constitution (**Prakriti** & **Vikriti**) to generate dynamic, seasonal, and dosha-balanced meal plans.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://ayurdietpro-up4f.onrender.com)
+[![React](https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
+**AyurDiet Pro** is a clinical decision-support tool for Ayurvedic practitioners. It bridges classical Ayurvedic wisdom — Prakriti assessment, Dosha balancing, Rasa/Virya/Vipaka logic — with modern nutritional science including BMR calculation and macro-nutrient targeting.
+
+🔗 **Live:** https://ayurdietpro-up4f.onrender.com
 
 ---
 
 ## 📋 Table of Contents
 
 - [Key Features](#-key-features)
-- [Ayurvedic Core Principles](#️-ayurvedic-core-principles)
 - [Tech Stack](#️-tech-stack)
 - [Project Structure](#-project-structure)
+- [Architecture](#️-architecture)
 - [Getting Started](#-getting-started)
 - [API Overview](#-api-overview)
+- [Clinical Methodology](#-clinical-methodology)
+- [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -21,119 +30,104 @@ AyurDietPro is a comprehensive wellness application that bridges classical Ayurv
 
 ## ✨ Key Features
 
-- **Prakriti & Vikriti Assessment:** Interactive diagnostic questionnaires evaluating physical, physiological, and psychological traits to compute Vata, Pitta, and Kapha balances.
-- **Dynamic Ahara (Meal) Planner:** Automatically generates tailored meal plans that balance primary doshas while preventing aggravations.
-- **Ayurvedic Food Ontology:** Catalog of ingredients classified by:
-  - **Rasa** (Taste: Sweet, Sour, Salty, Pungent, Bitter, Astringent)
-  - **Guna** (Qualities: Heavy, Light, Oily, Dry, etc.)
-  - **Virya** (Potency: Heating/Cooling)
-  - **Vipaka** (Post-digestive effect)
-- **Ritucharya (Seasonal) Adjustments:** Adapts meal recommendations dynamically based on current seasons and weather.
-- **Agni & Digestion Tracking:** Daily logs to monitor digestive fire (*Agni*), energy levels, and food compatibility (*Viruddha Ahara* alerts).
-
----
-
-## 🕉️ Ayurvedic Core Principles
-
-```
-┌────────────────────────────────────────────────────────┐
-│                   User Assessment                      │
-│            (Prakriti: Vata / Pitta / Kapha)            │
-└───────────────────────────┬────────────────────────────┘
-                            │
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│                 AyurDiet Rule Engine                   │
-│  • Season (Ritucharya)      • Six Tastes (Shad Rasa)   │
-│  • Digestive Fire (Agni)    • Food Potency (Virya)     │
-└───────────────────────────┬────────────────────────────┘
-                            │
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│              Personalized Diet & Recipes               │
-└────────────────────────────────────────────────────────┘
-```
+- **Clinical Intake Form** — Comprehensive sectioned patient form covering vitals, digestive history, and behavioral data.
+- **Ayur-Logic Engine** — Automatically calculates Prakriti/Vikriti and recommends foods based on Virya, Rasa, Vipaka, and Dosha-specific impacts.
+- **Interactive Diet Builder:**
+  - 7-day weekly meal schedule planning
+  - Real-time macro gauges vs. calculated clinical targets (BMR/TDEE)
+  - Intelligent randomized plan generation from clinical templates
+- **Apathya (Contraindication) Check** — Cross-references medical conditions (Acidity, IBS, Diabetes, etc.) with food contraindications and surfaces clinical alerts with logical reasoning.
+- **Weekly Insights Dashboard** — Practitioner activity, patient trends, and Vikriti distribution over a rolling 7-day window.
+- **PDF Export** — Patient-facing diet charts ready for distribution, generated with jsPDF + AutoTable.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **Framework:** Next.js / React (TypeScript)
-- **Styling:** Tailwind CSS, Lucide Icons
-- **State Management & Data Fetching:** Zustand / TanStack Query
-
-### Backend
-- **Runtime & Framework:** Node.js (Express.js) or Python (FastAPI)
-- **Database:** MongoDB (Mongoose) / PostgreSQL (Prisma)
-- **Authentication:** JWT & OAuth 2.0
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React.js, Vite, Vanilla CSS (Glassmorphism) |
+| **Backend** | FastAPI (Python), SQLAlchemy ORM |
+| **Database** | SQLite |
+| **Auth** | JWT-based Authentication |
+| **PDF** | jsPDF, AutoTable |
+| **Deployment** | Render |
 
 ---
 
 ## 📁 Project Structure
 
-```text
+```
 AyurDietPro/
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yml
-├── client/                           # Frontend (Next.js / React + Tailwind CSS)
+├── client/                          # React + Vite frontend
 │   ├── public/
-│   │   ├── assets/
-│   │   └── icons/
 │   ├── src/
-│   │   ├── app/                      # Next.js App Router (or pages/)
-│   │   │   ├── (auth)/login/
-│   │   │   ├── assessment/           # Prakriti / Dosha Quiz
-│   │   │   ├── dashboard/            # User Diet Dashboard
-│   │   │   ├── meal-planner/         # Daily / Weekly Ahara Planner
-│   │   │   └── recipes/              # Ayurvedic Recipes Directory
-│   │   ├── components/
-│   │   │   ├── assessment/           # Questionnaires, sliders, result charts
-│   │   │   ├── diet/                 # Meal cards, Guna/Rasa breakdowns
-│   │   │   ├── ui/                   # Buttons, modals, forms
-│   │   │   └── layout/               # Header, Sidebar, Footer
-│   │   ├── hooks/                    # Custom React hooks
-│   │   ├── services/                 # API client & fetchers (Axios / TanStack Query)
-│   │   ├── types/                    # TypeScript interfaces
-│   │   └── utils/                    # Formatters & helper functions
+│   │   ├── assets/                  # Static assets (icons, images)
+│   │   ├── components/              # Reusable UI components
+│   │   │   ├── MacroGauge.jsx       # Real-time macro tracking gauge
+│   │   │   ├── MealCard.jsx         # Meal slot display card
+│   │   │   ├── ConflictAlert.jsx    # Apathya clinical alert banner
+│   │   │   └── PatientCard.jsx      # Patient summary widget
+│   │   ├── pages/                   # Practitioner workflow pages
+│   │   │   ├── PatientForm.jsx      # Clinical intake form
+│   │   │   ├── DietBuilder.jsx      # 7-day diet plan builder
+│   │   │   ├── Dashboard.jsx        # Weekly insights dashboard
+│   │   │   └── Reports.jsx          # PDF export page
+│   │   ├── services/                # Axios API call wrappers
+│   │   │   └── api.js
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── index.html
 │   ├── package.json
-│   └── tailwind.config.ts
+│   └── vite.config.js
 │
-├── server/                           # Backend API (Node.js/Express or Python/FastAPI)
-│   ├── src/
-│   │   ├── config/                   # DB connection, environment variables
-│   │   ├── controllers/              # Request handlers
-│   │   │   ├── authController.js
-│   │   │   ├── userController.js
-│   │   │   ├── assessmentController.js
-│   │   │   └── dietPlanController.js
-│   │   ├── models/                   # Schemas (User, PrakritiProfile, FoodItem, MealPlan)
-│   │   ├── routes/                   # API Route definitions
-│   │   ├── services/
-│   │   │   ├── aiService.js          # AI / LLM integration for custom recipes
-│   │   │   └── ayurvedaEngine/       # Core Ayurvedic logic
-│   │   │       ├── doshaCalculator.js # Vata-Pitta-Kapha scoring
-│   │   │       ├── foodMatcher.js    # Rasa, Guna, Virya, Vipaka balancing
-│   │   │       └── ritucharya.js     # Seasonal dietary adjustments
-│   │   ├── middlewares/              # Auth, validation, error handlers
-│   │   └── utils/
-│   ├── tests/
-│   ├── package.json
-│   └── server.js
+├── server/                          # FastAPI Python backend
+│   ├── engine/                      # Core Ayurvedic logic
+│   │   ├── ayur_logic.py            # Food recommendation engine (Virya/Rasa/Vipaka)
+│   │   └── conflict_checker.py      # Apathya contraindication detection
+│   ├── routes/                      # Modular API endpoints
+│   │   ├── auth.py                  # Register / login / JWT
+│   │   ├── patients.py              # Patient CRUD & history
+│   │   ├── diet.py                  # Diet plan generation & retrieval
+│   │   ├── foods.py                 # Food database queries
+│   │   └── reports.py               # PDF chart generation
+│   ├── models/                      # SQLAlchemy ORM models
+│   │   ├── user.py
+│   │   ├── patient.py
+│   │   ├── food.py
+│   │   └── diet_plan.py
+│   ├── database.py                  # DB connection, init & seed
+│   ├── requirements.txt
+│   └── main.py                      # FastAPI entry point
 │
-├── data/                             # Curated Ayurvedic Knowledge Base
-│   ├── ayurvedic_foods.json          # Foods with Rasa/Virya/Vipaka & Dosha impact
-│   ├── prakriti_questions.json       # Standard questionnaire data
-│   └── seasonal_guidelines.json     # Ritucharya rules
-│
-├── docs/                             # Documentation & Architecture diagrams
-│   └── api-spec.md
-├── .env.example
-├── .gitignore
-├── docker-compose.yml
-├── LICENSE
-└── README.md
+├── METHODOLOGY.md                   # Full clinical methodology documentation
+├── README.md
+├── start-production.bat             # Windows: build frontend + serve from FastAPI
+└── start-production.sh              # macOS/Linux: build frontend + serve from FastAPI
+```
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│              Patient Intake & Vitals                │
+│       (Prakriti • Vikriti • Medical History)        │
+└──────────────────────┬──────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│               Ayur-Logic Engine                     │
+│  Dosha Balancing │ Virya/Rasa/Vipaka │ Apathya      │
+│  BMR/TDEE Calc   │ Macro Targets     │ Conflict Flag │
+└──────────────────────┬──────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────┐
+│          Personalized 7-Day Diet Chart              │
+│      (PDF Export • Macro Tracking • Variety)        │
+└─────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -142,44 +136,43 @@ AyurDietPro/
 
 ### Prerequisites
 
-Ensure you have the following installed:
-- [Node.js](https://nodejs.org/) (v18.x or higher)
-- [MongoDB](https://www.mongodb.com/) (Local instance or Atlas URI)
-- [Git](https://git-scm.com/)
+- Python 3.9+
+- Node.js 18+
 
-### Installation & Setup
+### Backend Setup
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/KunalSoyane/AyurDietPro.git
-   cd AyurDietPro
-   ```
+```bash
+cd server
+pip install -r requirements.txt
+python main.py
+```
 
-2. **Configure environment variables:**
-   Create `.env` files in both `/client` and `/server` based on `.env.example`:
-   ```env
-   # /server/.env
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/ayurdietpro
-   JWT_SECRET=your_jwt_secret_key
-   CLIENT_URL=http://localhost:3000
-   ```
+> The database initializes and seeds with default foods and templates on first run.
 
-3. **Start the backend:**
-   ```bash
-   cd server
-   npm install
-   npm run dev
-   ```
+### Frontend Setup
 
-4. **Start the frontend:**
-   ```bash
-   cd ../client
-   npm install
-   npm run dev
-   ```
+```bash
+cd client
+npm install
+npm run dev
+```
 
-5. Open `http://localhost:3000` in your browser.
+Frontend runs at `http://localhost:5173`, API at `http://localhost:8000`.
+
+### Production (Single Service — No Docker)
+
+Compiles the frontend and serves everything from the FastAPI server on port `8000`.
+
+**Windows:**
+```cmd
+start-production.bat
+```
+
+**macOS / Linux:**
+```bash
+chmod +x start-production.sh
+./start-production.sh
+```
 
 ---
 
@@ -187,27 +180,65 @@ Ensure you have the following installed:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/auth/register` | Register a new user |
-| `POST` | `/api/v1/auth/login` | Authenticate user and issue JWT |
-| `POST` | `/api/v1/assessment/evaluate` | Submit Prakriti quiz & get Dosha scores |
-| `GET` | `/api/v1/diet/plan/daily` | Fetch today's personalized meal recommendations |
-| `GET` | `/api/v1/foods?dosha=pitta` | Query foods by dosha compatibility |
-| `POST` | `/api/v1/logs/digestive` | Log daily Agni / digestion updates |
+| `POST` | `/api/auth/register` | Register a new practitioner |
+| `POST` | `/api/auth/login` | Authenticate & receive JWT |
+| `POST` | `/api/patients` | Create patient record with intake data |
+| `GET` | `/api/patients/:id` | Fetch patient profile & history |
+| `POST` | `/api/diet/generate` | Generate 7-day diet plan from Prakriti |
+| `GET` | `/api/foods?dosha=pitta` | Query foods by Dosha compatibility |
+| `POST` | `/api/reports/pdf` | Export diet chart as PDF |
+
+Full spec: [`METHODOLOGY.md`](METHODOLOGY.md)
+
+---
+
+## 🧪 Clinical Methodology
+
+See [`METHODOLOGY.md`](METHODOLOGY.md) for the full breakdown. Summary:
+
+**1. Nutritional Foundation**
+BMR via the Mifflin-St Jeor Equation, activity-adjusted (multipliers 1.2–1.9), with a standard macro split of 55% Carbs / 20% Protein / 25% Fat.
+
+**2. Ayur-Logic Engine**
+Three-tier food compatibility check: Vikriti balancing → Virya alignment → Rasa/Vipaka attribute matching for holistic Pathya recommendations.
+
+**3. Safety Layer**
+Apathya Check flags Dosha-food conflicts and medical contraindications with visual alerts and practitioner-readable reasoning.
+
+**4. Scheduling**
+7-day horizon with meal-slot-specific category prioritization and intelligent randomization for variety and adherence.
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Ritucharya (Seasonal) integration with climate-based auto-adjustments
+- [ ] Smart ingredient swapping while preserving Virya/Rasa profiles
+- [ ] Patient portal with meal tracking and digestive feedback
+- [ ] Grocery list automation grouped by market section
+- [ ] Longitudinal Vikriti trend analytics across consultations
+- [ ] Dina Charya (Ayurvedic clock) aware macro scheduling
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! To get started:
-
 1. Fork the project
-2. Create your feature branch: `git checkout -b feature/AyurFeature`
-3. Commit your changes: `git commit -m 'Add some AyurFeature'`
-4. Push to the branch: `git push origin feature/AyurFeature`
+2. Create your branch: `git checkout -b feature/AyurFeature`
+3. Commit: `git commit -m 'Add AyurFeature'`
+4. Push: `git push origin feature/AyurFeature`
 5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
+
+---
+
+## 📧 Contact
+
+**Kunal Soyane** — [github.com/KunalSoyane](https://github.com/KunalSoyane)
+
+Project: https://github.com/KunalSoyane/AyurDietPro | Demo: https://ayurdietpro-up4f.onrender.com
