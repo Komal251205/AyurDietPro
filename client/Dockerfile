@@ -1,4 +1,4 @@
-# --- Stage 1: Build React App ---
+# Stage 1: Build React static files
 FROM node:18-alpine AS build
 
 WORKDIR /app
@@ -9,14 +9,12 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# --- Stage 2: Serve with Nginx ---
+# Stage 2: Serve using Nginx
 FROM nginx:alpine
 
-# Copy built files from Stage 1 to Nginx default html folder
-# Note: Replace 'dist' with 'build' if using Create React App instead of Vite
+# Note: If your build tool produces 'build' instead of 'dist', update this path
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy custom Nginx config if needed for React Router routing support
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
