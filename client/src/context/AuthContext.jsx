@@ -13,6 +13,9 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(token),
       async login(email, password) {
         const data = await api.login(email, password);
+        if (!data || !data.access_token) {
+          throw new Error("Unable to login right now. Please try again.");
+        }
         localStorage.setItem("token", data.access_token);
         setToken(data.access_token);
       },

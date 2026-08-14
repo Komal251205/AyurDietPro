@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { BASE_URL } from "../api";
 
 export default function PatientViewPage() {
   const { id } = useParams();
   const [plan, setPlan] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/public/plan/${id}`)
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
+    fetch(`${BASE_URL}/public/plan/${id}`)
+      .then((res) => (res.ok ? res.text() : Promise.reject()))
+      .then((text) => (text.trim() ? JSON.parse(text) : null))
       .then(setPlan)
       .catch(() => setPlan(null));
   }, [id]);

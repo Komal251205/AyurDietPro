@@ -25,7 +25,7 @@ export default function PatientFormPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const isEdit = !!id;
+  const isEdit = !!id && id !== "undefined";
 
   useEffect(() => {
     if (isEdit) {
@@ -55,7 +55,15 @@ export default function PatientFormPage() {
       navigate(`/patients/${id}`);
     } else {
       const created = await api.createPatient(payload);
-      navigate(`/patients/${created.id}/diet`);
+      // Fallback check for MongoDB _id vs id
+      const createdId = created._id || created.id;
+      
+      if (createdId) {
+        navigate(`/patients/${createdId}/diet`);
+      } else {
+        console.error("Created patient missing ID:", created);
+        navigate("/patients");
+      }
     }
   };
 
@@ -221,4 +229,3 @@ export default function PatientFormPage() {
     </div>
   );
 }
-

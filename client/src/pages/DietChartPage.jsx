@@ -18,42 +18,77 @@ export default function DietChartPage() {
   const [openReasoning, setOpenReasoning] = useState(false);
 
   useEffect(() => {
-    api.patient(id).then(setPatient);
+    if (!id || id === "undefined") return;
+
+    api.patient(id).then(setPatient).catch(console.error);
+    
     api.templates().then((t) => {
-      setTemplates(t);
-      if (t[0]) setTemplateId(String(t[0].id));
-    });
-    api.foods().then(setFoods);
+      setTemplates(t || []);
+      if (t && t.length > 0) {
+        const firstId = t[0]._id || t[0].id;
+        setTemplateId(String(firstId));
+      }
+    }).catch(console.error);
+
+    api.foods().then(setFoods).catch(console.error);
+    
     api.patientPlans(id).then((plans) => {
       if (plans && plans.length > 0) {
         setPlan(plans[0]); // Load the most recent plan
       }
-    });
+    }).catch(console.error);
   }, [id]);
 
+  if (!id || id === "undefined") {
+    return (
+      <div className="container">
+        <div className="card" style={{ textAlign: "center", padding: "2rem" }}>
+          <h2>Invalid Patient Selected</h2>
+          <p className="muted" style={{ margin: "1rem 0" }}>Please select a valid patient from the patients directory.</p>
+          <Link to="/patients" className="primary-btn">
+            Back to Patients
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const updateItem = async (item, foodId, portionG) => {
-    if (!plan) return;
-    const updated = await api.updatePlan(plan.id, {
-      items: [{ id: item.id, food_id: foodId || item.food_id, portion_g: portionG || item.portion_g }],
+    const planId = plan?._id || plan?.id;
+    const itemId = item?._id || item?.id;
+    if (!planId) return;
+
+    const updated = await api.updatePlan(planId, {
+      items: [{ id: itemId, food_id: foodId || item.food_id, portion_g: portionG || item.portion_g }],
     });
     setPlan(updated);
   };
 
   const updateTargets = async (targets) => {
-    if (!plan) return;
-    const updated = await api.updatePlan(plan.id, targets);
+    const planId = plan?._id || plan?.id;
+    if (!planId) return;
+
+    const updated = await api.updatePlan(planId, targets);
     setPlan(updated);
   };
 
   const generate = async () => {
-    const generated = await api.generatePlan({ patient_id: Number(id), template_id: Number(templateId) });
+    if (!id || !templateId) return;
+
+    // Send string IDs to match FastAPI expectations
+    const generated = await api.generatePlan({
+      patient_id: String(id),
+      template_id: String(templateId),
+    });
     setPlan(generated);
   };
 
   const dayItems = useMemo(() => {
-    if (!plan) return [];
+    if (!plan || !plan.items) return [];
     return plan.items.filter((i) => i.day_of_week === selectedDay);
   }, [plan, selectedDay]);
+
+  const currentPlanId = plan?._id || plan?.id;
 
   return (
     <div className="container">
@@ -61,7 +96,7 @@ export default function DietChartPage() {
         <div className="spread">
           <div>
             <h1>Diet Chart Builder</h1>
-            <p className="muted">Craft a balanced, clinical-grade plan for {patient?.name}.</p>
+            <p className="muted">Craft a balanced, clinical-grade plan for {patient?.name || "Patient"}.</p>
           </div>
           <div className="row">
             {plan && patient && (
@@ -79,11 +114,14 @@ export default function DietChartPage() {
 
         <div className="row" style={{ marginTop: "1rem" }}>
           <select value={templateId} onChange={(e) => setTemplateId(e.target.value)}>
-            {templates.map((template) => (
-              <option key={template.id} value={template.id}>
-                Template: {template.name}
-              </option>
-            ))}
+            {templates.map((template) => {
+              const tId = template._id || template.id;
+              return (
+                <option key={tId} value={tId}>
+                  Template: {template.name || template.title}
+                </option>
+              );
+            })}
           </select>
           <button className="primary-btn" onClick={generate} disabled={!templateId}>
             {plan ? "Re-Generate Plan" : "Generate Initial Plan"}
@@ -115,7 +153,7 @@ export default function DietChartPage() {
                   <label style={{ fontSize: "0.7rem" }}>TARGET CALORIES</label>
                   <input
                     type="number"
-                    value={plan.target_calories}
+                    value={plan.target_calories || ""}
                     onChange={(e) => updateTargets({ target_calories: Number(e.target.value) })}
                     style={{ width: "100px", padding: "4px 8px" }}
                   />
@@ -130,25 +168,28 @@ export default function DietChartPage() {
             )}
 
             <div className="form-grid">
-              {dayItems.map((item) => (
-                <MealCard
-                  key={item.id}
-                  item={item}
-                  onPortionChange={(newPortion) => updateItem(item, null, newPortion)}
-                  actions={
-                    <FoodSearchDropdown
-                      foods={foods}
-                      value={item.food_id}
-                      onChange={(foodId) => updateItem(item, foodId, null)}
-                    />
-                  }
-                />
-              ))}
+              {dayItems.map((item) => {
+                const itemId = item._id || item.id;
+                return (
+                  <MealCard
+                    key={itemId}
+                    item={item}
+                    onPortionChange={(newPortion) => updateItem(item, null, newPortion)}
+                    actions={
+                      <FoodSearchDropdown
+                        foods={foods}
+                        value={item.food_id}
+                        onChange={(foodId) => updateItem(item, foodId, null)}
+                      />
+                    }
+                  />
+                );
+              })}
             </div>
           </div>
 
           <div style={{ marginTop: "2rem", display: "flex", justifyContent: "center" }}>
-            <Link className="primary-btn" to={`/plan/${plan.id}/view`} style={{ padding: "12px 32px" }}>
+            <Link className="primary-btn" to={`/plan/${currentPlanId}/view`} style={{ padding: "12px 32px" }}>
               Launch Interactive Patient View
             </Link>
           </div>
@@ -158,4 +199,3 @@ export default function DietChartPage() {
     </div>
   );
 }
-
